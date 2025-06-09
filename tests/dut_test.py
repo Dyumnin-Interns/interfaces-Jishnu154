@@ -1,7 +1,7 @@
 import cocotb
 from cocotb.triggers import Timer,RisingEdge,ReadOnly
 from cocotb.clock import Clock
-from cocotb.drivers import BusDriver
+from cocotb_bus.drivers import BusDriver
 
 @cocotb.test()
 async def dut_test(dut):
