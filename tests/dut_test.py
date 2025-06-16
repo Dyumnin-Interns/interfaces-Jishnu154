@@ -14,6 +14,7 @@ async def dut_test(dut):
     dut.RST_N.value = 1
     input_drv=InputDriver(dut,"write",clk)
     output_drv=OutputDriver(dut,"read",clk,sb_callback=print)
+    cocotb.start_soon(my_monitor())
     await input_drv._driver_send(1)
     await input_drv._driver_send(0)
     await output_drv._driver_send(0)
@@ -44,7 +45,7 @@ class OutputDriver(BusDriver):
         self.clk=clk
         self.callback=sb_callback
 
-    async def _driver_send(self,value,sync=True):
+    async def monitor(self,value,sync=True):
         if self.bus.rdy.value!=1:
             await RisingEdge(self.bus.rdy)
         self.bus.en.value=1
