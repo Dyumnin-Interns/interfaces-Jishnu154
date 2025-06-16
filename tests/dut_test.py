@@ -53,6 +53,5 @@ class OutputDriver(BusDriver):
         await ReadOnly()
         self.callback(self.bus.data.value)
         await RisingEdge(self.clk)
-        self.bus.en.value=0
         await NextTimeStep()
 
