@@ -34,7 +34,7 @@ class InputDriver(BusDriver):
         self.bus.data.value=value
         await ReadOnly()
         await RisingEdge(self.clk)
-        self.bus.en.value=1
+        self.bus.en.value=0
         await NextTimeStep()
 class OutputDriver(BusDriver):
     _signals=['rdy','en','data']
@@ -53,6 +53,6 @@ class OutputDriver(BusDriver):
         await ReadOnly()
         self.callback(self.bus.data.value)
         await RisingEdge(self.clk)
-        self.bus.en.value=1
+        self.bus.en.value=0
         await NextTimeStep()
 
