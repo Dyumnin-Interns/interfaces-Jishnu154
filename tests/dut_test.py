@@ -14,10 +14,9 @@ async def dut_test(dut):
     dut.RST_N.value = 1
     input_drv=InputDriver(dut,"write",clk)
     output_drv=OutputDriver(dut,"read",clk,sb_callback=print)
-    cocotb.start_soon(my_monitor())
+    cocotb.start_soon(output_drv.monitor())
     await input_drv._driver_send(1)
     await input_drv._driver_send(0)
-    await output_drv._driver_send(0)
 
 class InputDriver(BusDriver):
     _signals=['rdy','en','data']
@@ -30,28 +29,28 @@ class InputDriver(BusDriver):
     async def _driver_send(self,value,sync=True):
         if self.bus.rdy.value!=1:
             await RisingEdge(self.bus.rdy)
+        self.bus.data.value = value
         self.bus.en.value=1
-        self.bus.data.value=value
-        await ReadOnly()
         await RisingEdge(self.clk)
         self.bus.en.value=0
         await NextTimeStep()
+
 class OutputDriver(BusDriver):
     _signals=['rdy','en','data']
 
     def __init__(self,dut,name,clk,sb_callback):
         BusDriver.__init__(self,dut,name,clk)
-        self.bus.en.value=0
         self.clk=clk
+        self.bus.en.value=0
         self.callback=sb_callback
 
-    async def monitor(self,value,sync=True):
-        if self.bus.rdy.value!=1:
-            await RisingEdge(self.bus.rdy)
-        self.bus.en.value=1
-        #self.bus.data=value
-        await ReadOnly()
-        self.callback(self.bus.data.value)
-        await RisingEdge(self.clk)
-        await NextTimeStep()
+    async def monitor(self):
+        while True:
+            if self.bus.rdy.value!=1:
+                await RisingEdge(self.bus.rdy)
+            self.bus.en.value=1
+            await ReadOnly()
+            self.callback(self.bus.data.value)
+            await RisingEdge(self.clk)
+            await NextTimeStep()
 
