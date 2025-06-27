@@ -2,6 +2,16 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 from cocotb_bus.drivers import BusDriver
+from cocotb_coverage.coverage import CoverPoint, coverage_db
+
+
+@CoverPoint("top.write_address", xf=lambda addr, data: addr, bins=list(range(8)))
+def cwrite_add(addr, data):
+    pass
+
+@CoverPoint("top.read_address", xf=lambda addr: addr, bins=list(range(8)))
+def cread_add(addr):
+    pass
 
 @cocotb.test()
 async def test_dut(dut):
@@ -14,6 +24,8 @@ async def test_dut(dut):
     read_drv = Rbus(dut, "", dut.CLK)
     await write_drv.write(4, 1)
     await write_drv.write(5, 1)
+    coverage_db.export_to_yaml(filename="coverage_report.yaml")
+    cocotb.log.info("Functional coverage written to coverage_report.yaml")
 
 class Wbus(BusDriver):
     _signals = ["write_address", "write_data", "write_en"]
@@ -30,6 +42,7 @@ class Wbus(BusDriver):
         self.bus.write_en.value = 1
         await RisingEdge(self.clock)
         self.bus.write_en.value = 0
+        cwrite_add(address, data)
 
 class Rbus(BusDriver):
     _signals = ["read_address", "read_en"]
@@ -45,3 +58,4 @@ class Rbus(BusDriver):
         await RisingEdge(self.clock)
         data = int(self.entity.read_data.value)
         self.bus.read_en.value = 0
+        cover_read_address(address)
