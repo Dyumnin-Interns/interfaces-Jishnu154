@@ -24,6 +24,9 @@ async def test_dut(dut):
     read_drv = Rbus(dut, "", dut.CLK)
     await write_drv.write(4, 1)
     await write_drv.write(5, 1)
+    await read_drv.read(4)
+    await read_drv.read(5)
+
     coverage_db.export_to_yaml(filename="coverage_report.yaml")
     cocotb.log.info("Functional coverage written to coverage_report.yaml")
 
@@ -58,4 +61,4 @@ class Rbus(BusDriver):
         await RisingEdge(self.clock)
         data = int(self.entity.read_data.value)
         self.bus.read_en.value = 0
-        cover_read_address(address)
+        cread_add(address)
